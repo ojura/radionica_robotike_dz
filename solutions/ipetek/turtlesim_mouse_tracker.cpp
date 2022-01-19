@@ -85,7 +85,7 @@ class MouseTurtleController{
 
 int main(int argc, char  **argv)
 {
-    ros::init(argc, argv, "MouseTurtleController");
+    ros::init(argc, argv, "turtlesim_mouse_tracker");
     MouseTurtleController turtcont;
     ros::spin();
     return 0;
