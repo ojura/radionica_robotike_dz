@@ -59,7 +59,6 @@ class MouseTurtleController{
         }
     
     private:
-        // map desktop coordinates (1920x1080) to turtlesims 11x11 coordinate system
         geometry_msgs::Point desktop_to_turtlesim(const geometry_msgs::Point& desktop_coord){
             geometry_msgs::Point ret_point;
             ret_point.x = (desktop_coord.x * 11) / SCREEN_X;
