@@ -26,8 +26,8 @@ class MouseTurtleController {
 
  public:
   MouseTurtleController() {
-    node_.getParam("/screen_x", SCREEN_X);
-    node_.getParam("/screen_y", SCREEN_Y);
+    node_.getParam("screen_x", SCREEN_X);
+    node_.getParam("screen_y", SCREEN_Y);
     mouse_pos_ = node_.subscribe(
         "/mouse_position", 1, &MouseTurtleController::mouse_pos_callback, this);
     turt_pos_ = node_.subscribe(
