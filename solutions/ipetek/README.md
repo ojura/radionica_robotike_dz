@@ -1,4 +1,2 @@
-Name your solutions like this:
-
-spiral_controller.py
-turtlesim_mouse_tracker.py
+- promijeniti rezoluciju ekrana ako treba u turtlesim_mouse_tracker.cpp na pocetku
+- moze se mjenjati i brzina
