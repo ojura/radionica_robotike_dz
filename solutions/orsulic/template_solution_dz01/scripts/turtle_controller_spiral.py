@@ -3,7 +3,7 @@ import rospy
 from geometry_msgs.msg import Twist 
 
 if __name__ == "__main__":
-    rospy.init_node('kontroler_kornjace')
+    rospy.init_node('turtle_controller_spiral')
 
     rate = rospy.Rate(20)
     publisher = rospy.Publisher('cmd_vel', Twist, queue_size = 1)

@@ -13,12 +13,10 @@ def calulate_and_publish_turtle_velocity():
 
     publisher.publish(current_velocity)
 
-
 def callback_turtlesim_pose(turtle_pose_msg):
     global turtle_pose
     turtle_pose = turtle_pose_msg
     calulate_and_publish_turtle_velocity()
-
 
 def callback_mouse_position(mouse_position_msg):
     global mouse_position
@@ -26,7 +24,7 @@ def callback_mouse_position(mouse_position_msg):
     calulate_and_publish_turtle_velocity()
 
 if __name__ == "__main__":
-    rospy.init_node('kontroler_kornjace')
+    rospy.init_node('turtle_controller_mouse')
 
     rate = rospy.Rate(20)
     publisher = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
