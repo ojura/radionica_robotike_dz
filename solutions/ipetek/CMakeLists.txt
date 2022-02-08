@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(mouse_tracker)
+project(zadace)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -104,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES mouse_tracker
+#  LIBRARIES zadace
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -136,6 +136,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/mouse_tracker_node.cpp)
 add_executable(turtlesim_mouse_tracker_node scripts/turtlesim_mouse_tracker.cpp) ##Ian Petek (add_exe)
 add_executable(spiral_controller_node scripts/spiral_controller.cpp) ##Ian Petek (add_exe)
+add_executable(wanderer_node scripts/wanderer.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -157,7 +158,9 @@ ${catkin_LIBRARIES}
 target_link_libraries(spiral_controller_node
 ${catkin_LIBRARIES}
 )  ##Ian Petek (link)
-
+target_link_libraries(wanderer_node
+${catkin_LIBRARIES}
+) 
 #############
 ## Install ##
 #############
@@ -205,7 +208,7 @@ ${catkin_LIBRARIES}
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_mouse_tracker.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_zadace.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
