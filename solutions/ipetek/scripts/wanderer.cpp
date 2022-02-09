@@ -27,10 +27,8 @@ class Wanderer {
     ros::Publisher cmdVelPublisher_;
 
     // callback functions
-    void baseScanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) {
-        vel_publish(msg);
-    }
-    void vel_publish(const sensor_msgs::LaserScan::ConstPtr &lastScan) {
+    void baseScanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) { vel_publish(msg); }
+    void vel_publish(const sensor_msgs::LaserScan::ConstPtr& lastScan) {
         geometry_msgs::Twist pub_msg;
         int arrMid = lastScan->ranges.size() / 2;
         float meanRight = std::accumulate(lastScan->ranges.begin(), lastScan->ranges.begin() + arrMid, 0.0) /
