@@ -18,7 +18,6 @@ class Wanderer {
     Wanderer(const ros::NodeHandle& nh) : nh_(nh) {
         baseScanSubscriber_ = nh_.subscribe("/base_scan", 1, &Wanderer::baseScanCallback, this);
         cmdVelPublisher_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
-        vel_publish_loop_ = nh_.createTimer(ros::Duration(0.1), &Wanderer::vel_publish_callback, this);
         srand(time(NULL));
     }
 
@@ -26,23 +25,23 @@ class Wanderer {
     ros::NodeHandle nh_;
     ros::Subscriber baseScanSubscriber_;
     ros::Publisher cmdVelPublisher_;
-    sensor_msgs::LaserScan lastScan_;
-    ros::Timer vel_publish_loop_;
 
     // callback functions
-    void baseScanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) { lastScan_ = *msg; }
-    void vel_publish_callback(const ros::TimerEvent& event) {
+    void baseScanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) {
+        vel_publish(msg);
+    }
+    void vel_publish(const sensor_msgs::LaserScan::ConstPtr &lastScan) {
         geometry_msgs::Twist pub_msg;
-        int arrMid = lastScan_.ranges.size() / 2;
-        float meanRight = std::accumulate(lastScan_.ranges.begin(), lastScan_.ranges.begin() + arrMid, 0.0) /
-                          (float)lastScan_.ranges.size();
-        float meanLeft = std::accumulate(lastScan_.ranges.begin() + arrMid + 1, lastScan_.ranges.end(), 0.0) /
-                         (float)lastScan_.ranges.size();
+        int arrMid = lastScan->ranges.size() / 2;
+        float meanRight = std::accumulate(lastScan->ranges.begin(), lastScan->ranges.begin() + arrMid, 0.0) /
+                          (float)lastScan->ranges.size();
+        float meanLeft = std::accumulate(lastScan->ranges.begin() + arrMid + 1, lastScan->ranges.end(), 0.0) /
+                         (float)lastScan->ranges.size();
 
         pub_msg.angular.z = (rand() % 3 - 1);
         pub_msg.linear.x = LINEAR_SPEED;
-        if (lastScan_.ranges[arrMid] < 0.5 || lastScan_.ranges[arrMid / 2] < 0.5 ||
-            lastScan_.ranges[3 * arrMid / 2] < 0.5) {
+        if (lastScan->ranges[arrMid] < 0.5 || lastScan->ranges[arrMid / 2] < 0.5 ||
+            lastScan->ranges[3 * arrMid / 2] < 0.5) {
             pub_msg.linear.x = 0;
             pub_msg.angular.z = meanLeft > meanRight ? ANGULAR_SPEED : -ANGULAR_SPEED;
         }
