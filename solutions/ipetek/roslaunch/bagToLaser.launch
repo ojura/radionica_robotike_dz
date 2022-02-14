@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --loop --quiet $(find zadace)/exam-laser.bag"/>
+    <node pkg="zadace" type="BagToLaserScan_node" name="BagToLaserScan_node"/>
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find zadace)/rviz/readLaserConfig.rviz" />
+</launch>

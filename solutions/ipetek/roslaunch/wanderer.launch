@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="stage_ros" type="stageros" name="stageros" args="/home/ianp/catkin_ws/src/rps_stage_worlds/worlds/simple_rps.world" required="true"/>
+    <node pkg="zadace" type="wanderer_node" name="wanderer_node"/>
+</launch>

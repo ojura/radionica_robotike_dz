@@ -137,6 +137,7 @@ include_directories(
 add_executable(turtlesim_mouse_tracker_node scripts/turtlesim_mouse_tracker.cpp) ##Ian Petek (add_exe)
 add_executable(spiral_controller_node scripts/spiral_controller.cpp) ##Ian Petek (add_exe)
 add_executable(wanderer_node scripts/wanderer.cpp)
+add_executable(BagToLaserScan_node scripts/BagToLaserScan.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -160,7 +161,10 @@ ${catkin_LIBRARIES}
 )  ##Ian Petek (link)
 target_link_libraries(wanderer_node
 ${catkin_LIBRARIES}
-) 
+)
+target_link_libraries(BagToLaserScan_node
+${catkin_LIBRARIES}
+)  
 #############
 ## Install ##
 #############
