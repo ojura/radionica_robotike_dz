@@ -26,7 +26,7 @@ class BagToLaserScan {
     sensor_msgs::LaserScan pub_msg_;
 
     void bagCallback(const visualization_msgs::Marker::ConstPtr msg) {
-        pub_msg_.ranges = std::vector<_Float32>(0);
+        pub_msg_.ranges.clear();
         for (auto& p : msg->points) {
             pub_msg_.ranges.push_back(sqrt(pow(p.x, 2) + pow(p.y, 2)));
         }
