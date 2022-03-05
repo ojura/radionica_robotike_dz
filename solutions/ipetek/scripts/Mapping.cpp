@@ -61,6 +61,18 @@ class Mapping {
         //pub_msg_.header.frame_id = msg.header.frame_id;
         pub_msg_.header.stamp = msg.header.stamp;
         // pub_msg_.points.clear();
+        
+        double angle;
+        for(int i = 0; i < msg.ranges.size(); i++){
+            if (msg.ranges[i] == 0.0) continue;
+            geometry_msgs::Point p;
+            angle = msg.angle_min + i * msg.angle_increment + theta;
+            p.x = cos(angle) * msg.ranges[i] + trans.x;
+            p.y = sin(angle) * msg.ranges[i] + trans.y;
+            pub_msg_.points.push_back(p);
+            
+        }
+        /*
         double angle = msg.angle_min + theta;
         for (auto& r : msg.ranges) {
             if (r == 0.0) continue;
@@ -69,7 +81,7 @@ class Mapping {
             p.y = sin(angle) * r + trans.y;
             pub_msg_.points.push_back(p);
             angle += msg.angle_increment;
-        }
+        }*/
         laserPub_.publish(pub_msg_);
     }
 };
