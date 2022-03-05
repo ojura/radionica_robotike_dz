@@ -48,7 +48,6 @@ class Mapping {
         geometry_msgs::Quaternion quat;
         double theta;
         try {
-            
             geometry_msgs::TransformStamped tf_global_laser =
                 tf_buffer_.lookupTransform("map", msg.header.frame_id, msg.header.stamp);
             trans = tf_global_laser.transform.translation;
@@ -58,17 +57,18 @@ class Mapping {
             ROS_ERROR("%s", ex.what());
             ROS_INFO("2\n");
         }
-        //pub_msg_.header.frame_id = msg.header.frame_id;
+        // pub_msg_.header.frame_id = msg.header.frame_id;
         pub_msg_.header.stamp = msg.header.stamp;
         // pub_msg_.points.clear();
-        double angle = msg.angle_min + theta;
-        for (auto& r : msg.ranges) {
-            if (r == 0.0) continue;
+
+        double angle;
+        for (int i = 0; i < msg.ranges.size(); i++) {
+            if (msg.ranges[i] == 0.0) continue;
             geometry_msgs::Point p;
-            p.x = cos(angle) * r + trans.x;
-            p.y = sin(angle) * r + trans.y;
+            angle = msg.angle_min + i * msg.angle_increment + theta;
+            p.x = cos(angle) * msg.ranges[i] + trans.x;
+            p.y = sin(angle) * msg.ranges[i] + trans.y;
             pub_msg_.points.push_back(p);
-            angle += msg.angle_increment;
         }
         laserPub_.publish(pub_msg_);
     }
