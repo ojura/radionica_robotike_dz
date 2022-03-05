@@ -64,6 +64,7 @@ class Mapping {
         double angle;
         for (int i = 0; i < msg.ranges.size(); i++) {
             if (msg.ranges[i] == 0.0) continue;
+        double angle;
             geometry_msgs::Point p;
             angle = msg.angle_min + i * msg.angle_increment + theta;
             p.x = cos(angle) * msg.ranges[i] + trans.x;
