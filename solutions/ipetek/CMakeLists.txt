@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  tf2
+  tf2_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -138,6 +140,7 @@ add_executable(turtlesim_mouse_tracker_node scripts/turtlesim_mouse_tracker.cpp)
 add_executable(spiral_controller_node scripts/spiral_controller.cpp) ##Ian Petek (add_exe)
 add_executable(wanderer_node scripts/wanderer.cpp)
 add_executable(BagToLaserScan_node scripts/BagToLaserScan.cpp)
+add_executable(Mapping_node scripts/Mapping.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -164,7 +167,10 @@ ${catkin_LIBRARIES}
 )
 target_link_libraries(BagToLaserScan_node
 ${catkin_LIBRARIES}
-)  
+)
+target_link_libraries(Mapping_node
+${catkin_LIBRARIES}
+)    
 #############
 ## Install ##
 #############
