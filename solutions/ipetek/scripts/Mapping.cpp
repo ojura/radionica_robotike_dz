@@ -4,6 +4,8 @@
 #include <geometry_msgs/Quaternion.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <ros/ros.h>
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
 #include <sensor_msgs/LaserScan.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -14,11 +16,12 @@
 
 class Mapping {
    public:
-    Mapping(const ros::NodeHandle& nh) : nh_(nh) {
+    Mapping(const ros::NodeHandle& nh) : nh_{nh}, tf_buffer_{ros::Duration{60 * 60}} {
         bagSub_ = nh_.subscribe("/scan", 1, &Mapping::bagCallback, this);
         laserPub_ = nh_.advertise<visualization_msgs::Marker>("point_positions", 0);
 
-        static tf2_ros::TransformListener tf_listener_(tf_buffer_);
+        initBuffer("/home/ianp/Downloads/mioc_robotika_2022.bag", tf_buffer_);
+        // static tf2_ros::TransformListener tf_listener_(tf_buffer_);
         pub_msg_.header.frame_id = "map";
         pub_msg_.color.a = 1;
         pub_msg_.color.r = 1;
@@ -47,8 +50,8 @@ class Mapping {
     ros::Subscriber bagSub_;
     ros::Publisher laserPub_;
     visualization_msgs::Marker pub_msg_;
-    tf2_ros::Buffer tf_buffer_;
     nav_msgs::OccupancyGrid grid_msg_;
+    tf2_ros::Buffer tf_buffer_;
     ros::Publisher grid_pub_;
     int scanNum_ = 0;
     // int accumulate_every_n = 10;
@@ -72,7 +75,7 @@ class Mapping {
         double theta;
         try {
             geometry_msgs::TransformStamped tf_global_laser =
-                tf_buffer_.lookupTransform("map", msg.header.frame_id, msg.header.stamp);
+                tf_buffer_.lookupTransform("map", "base_link", msg.header.stamp);
             trans = tf_global_laser.transform.translation;
             quat = tf_global_laser.transform.rotation;
             theta = 2 * atan2(quat.z, quat.w);
@@ -81,7 +84,7 @@ class Mapping {
             return;
         }
         pub_msg_.header.stamp = msg.header.stamp;
-        // pub_msg_.points.clear();
+        pub_msg_.points.clear();
 
         double angle;
         for (int i = 0; i < msg.ranges.size(); i++) {
@@ -121,24 +124,37 @@ class Mapping {
         return vec;
     }
 
-    std::vector<std::pair<int, int>> bresenham(int x, int y, int x2, int y2) {
+    std::vector<std::pair<int, int>> bresenham(int x1, int y1, int x2, int y2) {
         std::vector<std::pair<int, int>> ret;
-        int dx, dy, p;
-        dx = x2 - x;
-        dy = y2 - y;
-        p = 2 * dy - dx;
-        while (x <= x2) {
-            if (p < 0) {
-                x++;
-                p += 2 * dy;
-            } else {
-                x++;
+        int m_new = 2 * (y2 - y1);
+        int slope_error_new = m_new - (x2 - x1);
+        for (int x = x1, y = y1; x <= x2; x++) {
+            ret.push_back({x, y});  
+            slope_error_new += m_new;
+            if (slope_error_new >= 0) {
                 y++;
-                p += 2 * (dy - dx);
+                slope_error_new -= 2 * (x2 - x1);
             }
-            ret.push_back({x, y});
         }
         return ret;
+    }
+
+    void initBuffer(std::string bag_source, tf2_ros::Buffer& buffer) {
+        rosbag::Bag bag;
+        bag.open(bag_source);
+
+        rosbag::View view(bag);
+        for (const auto& msg : view) {
+            if (msg.getTopic() == "/tf") {
+                auto msg_pointer = msg.instantiate<tf2_msgs::TFMessage>();
+                if (msg_pointer == nullptr) continue;
+                for (const auto& transf : msg_pointer->transforms) {
+                    // ROS_INFO("%s %s",transf.header.frame_id, transf.child_frame_id);
+                    buffer.setTransform(transf, "unused_authority", false);
+                }
+            }
+        }
+        std::cout << buffer.allFramesAsString() << std::endl;
     }
 };
 
