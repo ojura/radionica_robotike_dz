@@ -15,7 +15,7 @@
 class Mapping {
    public:
     Mapping(const ros::NodeHandle& nh) : nh_(nh) {
-        bagSub_ = nh_.subscribe("/pioneer/scan", 1, &Mapping::bagCallback, this);
+        bagSub_ = nh_.subscribe("/scan", 1, &Mapping::bagCallback, this);
         laserPub_ = nh_.advertise<visualization_msgs::Marker>("point_positions", 0);
 
         static tf2_ros::TransformListener tf_listener_(tf_buffer_);
@@ -51,7 +51,7 @@ class Mapping {
     nav_msgs::OccupancyGrid grid_msg_;
     ros::Publisher grid_pub_;
     int scanNum_ = 0;
-    int accumulate_every_n = 10;
+    // int accumulate_every_n = 10;
 
     void bagCallback(const sensor_msgs::LaserScan& msg) {
         if (msg.header.stamp < pub_msg_.header.stamp) {
@@ -62,10 +62,10 @@ class Mapping {
             grid_msg_.data = makeGrid(grid_msg_.info.height, grid_msg_.info.width);
             return;
         }
-        if (scanNum_ != accumulate_every_n) {
-            scanNum_++;
-            return;
-        }
+        // if (scanNum_ != accumulate_every_n) {
+        //    scanNum_++;
+        //    return;
+        //}
         scanNum_ = 0;
         geometry_msgs::Vector3 trans;
         geometry_msgs::Quaternion quat;
@@ -76,15 +76,22 @@ class Mapping {
             trans = tf_global_laser.transform.translation;
             quat = tf_global_laser.transform.rotation;
             theta = 2 * atan2(quat.z, quat.w);
-        } catch (tf2::TransformException ex) {
+        } catch (tf2::TransformException& ex) {
             ROS_ERROR("%s", ex.what());
+            return;
         }
         pub_msg_.header.stamp = msg.header.stamp;
-        pub_msg_.points.clear();
+        // pub_msg_.points.clear();
 
         double angle;
         for (int i = 0; i < msg.ranges.size(); i++) {
             if (msg.ranges[i] == 0.0) continue;
+            if (i > 1 && i < msg.ranges.size() - 1) {
+                double diff_before = abs(msg.ranges[i] - msg.ranges[i - 1]);
+                double diff_after = abs(msg.ranges[i] - msg.ranges[i + 1]);
+                if (diff_before > 0.02 || diff_after > 0.02) continue;
+            }
+
             double angle;
             geometry_msgs::Point p;
             angle = msg.angle_min + i * msg.angle_increment + theta;
@@ -95,6 +102,14 @@ class Mapping {
             int grid_y = round(p.y / grid_msg_.info.resolution) + 900;
             int grid_x = round(p.x / grid_msg_.info.resolution) + 300;
             grid_msg_.data[grid_y * grid_msg_.info.height + grid_x] = 100;
+
+            // Bresenham's
+            std::vector<std::pair<int, int>> linePoints =
+                bresenham((trans.x / grid_msg_.info.resolution) + 300, (trans.y / grid_msg_.info.resolution) + 900,
+                          grid_x, grid_y);
+            for (auto& point : linePoints) {
+                grid_msg_.data[point.second * grid_msg_.info.height + point.first] = 0;
+            }
         }
         laserPub_.publish(pub_msg_);
         grid_msg_.header.stamp = msg.header.stamp;
@@ -104,6 +119,26 @@ class Mapping {
     std::vector<int8_t> makeGrid(int height, int width, int init = -1) {
         std::vector<int8_t> vec(width * height, init);
         return vec;
+    }
+
+    std::vector<std::pair<int, int>> bresenham(int x, int y, int x2, int y2) {
+        std::vector<std::pair<int, int>> ret;
+        int dx, dy, p;
+        dx = x2 - x;
+        dy = y2 - y;
+        p = 2 * dy - dx;
+        while (x <= x2) {
+            if (p < 0) {
+                x++;
+                p += 2 * dy;
+            } else {
+                x++;
+                y++;
+                p += 2 * (dy - dx);
+            }
+            ret.push_back({x, y});
+        }
+        return ret;
     }
 };
 
@@ -115,5 +150,3 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-
-//TODO: rosparam for global frame
